@@ -1,17 +1,24 @@
 {
-  "name": "jazamart",
+  "name": "jazamart-backend",
+  "version": "1.0.1",
   "private": true,
+  "main": "server.js",
   "scripts": {
-    "install:all": "npm --prefix backend install --no-audit --no-fund && npm --prefix frontend install --no-audit --no-fund",
-    "backend": "npm --prefix backend start",
-    "frontend": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build",
-    "db:check": "npm --prefix backend run db:check",
-    "db:init": "npm --prefix backend run db:init",
-    "start": "npm --prefix backend start",
-    "check": "npm --prefix backend run db:check && npm --prefix frontend run build",
-    "docker:build": "docker build -t jazamart .",
-    "docker:run": "docker run --env-file backend/.env -p 5000:5000 jazamart"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:check": "node -e \"require('dotenv').config(); const {Pool}=require('pg'); const {checkDatabase,printReport}=require('./db-check'); const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_SSL==='true'?{rejectUnauthorized:false}:false}); checkDatabase(pool).then(r=>{printReport(r); process.exitCode=r.ok?0:1}).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>pool.end())\"",
+    "db:init": "node db-init.js",
+    "install:deps": "node install-deps.js"
   },
-  "engines": {"node": ">=20"}
+  "dependencies": {
+    "bcryptjs": "2.4.3",
+    "cors": "2.8.5",
+    "dotenv": "16.4.7",
+    "express": "4.21.2",
+    "jsonwebtoken": "9.0.2",
+    "pg": "8.13.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

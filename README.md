@@ -1,16 +1,36 @@
 # JazaMart
 
-Kenya-first multi-vendor marketplace. Customers can register, browse/search products, add to cart, save delivery details, checkout and view orders. Sellers can register and add products. PostgreSQL stores marketplace data.
+Kenya-first multi-vendor marketplace prototype with customer accounts, product browsing, cart/checkout, orders and tracking, seller tools, reviews, and admin moderation.
 
-## Local
+## Run locally
 
-1. `npm run install:all`
-2. Configure `backend/.env` from `backend/.env.example`.
-3. `npm run db:init`
-4. `npm start`
+```bash
+npm run install:all
+npm run db:init
+npm start
+```
 
-## Online
+For frontend development with Vite:
 
-`render.yaml` provisions a Docker web service and PostgreSQL database. The Docker image builds the React frontend and serves it from the Express API.
+```bash
+npm run frontend
+```
 
-Never commit real `.env` files, JWT secrets, database passwords, or payment credentials.
+Set `DATABASE_URL` and `JWT_SECRET` in `backend/.env` first. See `backend/.env.example`.
+
+## Deploy online
+
+A production Dockerfile and Render Blueprint are included. See `DEPLOY.md`.
+
+The production image builds the React frontend and serves the frontend plus Express API from one service. The database can be initialized automatically with `AUTO_INIT_DB=true`.
+
+## Important
+
+- npm itself is operational; local `EAI_AGAIN` / DNS errors are machine or network connectivity problems, not a JazaMart dependency-version error. npm's public registry is the default registry.
+- Real M-Pesa payments require your own Daraja credentials and public HTTPS callback.
+- Never commit `.env` files or production secrets.
+
+
+## v5.1 deployment hardening
+
+This release is configured for a single Render Docker Web Service plus PostgreSQL. It avoids `npm ci` because the repository intentionally does not include lockfiles, uses Singapore for the Kenya-first deployment, and keeps the API available even when the database is temporarily unavailable.

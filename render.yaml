@@ -16,8 +16,26 @@ services:
         value: "true"
       - key: JWT_SECRET
         generateValue: true
-      - key: NODE_ENV
-        value: production
+      - key: PUBLIC_SITE_URL
+        value: https://jazamart.onrender.com
+      - key: MPESA_ENV
+        value: sandbox
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_SHORTCODE
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_CALLBACK_URL
+        value: https://jazamart.onrender.com/api/mpesa/callback
+      - key: MPESA_ACCOUNT_REFERENCE
+        value: JazaMart
+      - key: MPESA_TRANSACTION_DESC
+        value: JazaMart order payment
+      - key: MPESA_TRANSACTION_TYPE
+        value: CustomerPayBillOnline
 
 databases:
   - name: jazamart-db

@@ -1,9 +1,11 @@
+# JazaMart production image: build React, then serve it + the API from Express.
 FROM node:20-bookworm-slim AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install --no-audit --no-fund --prefer-online
 COPY frontend/ ./
 RUN npm run build
+
 FROM node:20-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production
@@ -13,4 +15,4 @@ RUN cd backend && npm install --omit=dev --no-audit --no-fund --prefer-online
 COPY backend/ ./backend/
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 EXPOSE 5000
-CMD ["node","backend/server.js"]
+CMD ["node", "backend/server.js"]

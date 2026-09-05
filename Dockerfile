@@ -4,10 +4,12 @@
 FROM node:20-bookworm-slim AS source
 WORKDIR /src
 COPY JazaMart-v6.0-github-ready.zip /tmp/jazamart.zip
+COPY deploy-hardening.js /tmp/deploy-hardening.js
 RUN apt-get update \
   && apt-get install -y --no-install-recommends unzip \
   && unzip -q /tmp/jazamart.zip -d /src \
-  && rm -rf /var/lib/apt/lists/* /tmp/jazamart.zip
+  && node /tmp/deploy-hardening.js /src/backend/server.js \
+  && rm -rf /var/lib/apt/lists/* /tmp/jazamart.zip /tmp/deploy-hardening.js
 
 FROM node:20-bookworm-slim AS frontend-build
 WORKDIR /app/frontend

@@ -16,7 +16,11 @@ services:
         value: "true"
       - key: JWT_SECRET
         generateValue: true
+      - key: NODE_ENV
+        value: production
       - key: PUBLIC_SITE_URL
+        value: https://jazamart.onrender.com
+      - key: FRONTEND_URL
         value: https://jazamart.onrender.com
       - key: MPESA_ENV
         value: sandbox
@@ -25,7 +29,7 @@ services:
       - key: MPESA_CONSUMER_SECRET
         sync: false
       - key: MPESA_SHORTCODE
-        sync: false
+        value: "174379"
       - key: MPESA_PASSKEY
         sync: false
       - key: MPESA_CALLBACK_URL

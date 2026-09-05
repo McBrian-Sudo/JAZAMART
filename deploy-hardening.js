@@ -23,5 +23,62 @@ if (!source.includes(oldReference)) {
 }
 source = source.replace(oldReference, newReference);
 
+const securityAnchor = "const app = express();";
+const securityBlock = `const app = express();
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
+
+const authAttemptBuckets = new Map();
+function authRateLimit(req, res, next) {
+  const now = Date.now();
+  const key = req.ip || 'unknown';
+  const windowMs = 15 * 60 * 1000;
+  const maxAttempts = 10;
+  const bucket = authAttemptBuckets.get(key);
+  if (!bucket || now - bucket.startedAt >= windowMs) {
+    authAttemptBuckets.set(key, { startedAt: now, count: 1 });
+    return next();
+  }
+  if (bucket.count >= maxAttempts) {
+    const retryAfter = Math.ceil((bucket.startedAt + windowMs - now) / 1000);
+    res.setHeader('Retry-After', String(retryAfter));
+    return res.status(429).json({ message: 'Too many authentication attempts. Please try again later.' });
+  }
+  bucket.count += 1;
+  return next();
+}
+setInterval(() => {
+  const cutoff = Date.now() - 15 * 60 * 1000;
+  for (const [key, bucket] of authAttemptBuckets) {
+    if (bucket.startedAt < cutoff) authAttemptBuckets.delete(key);
+  }
+}, 15 * 60 * 1000).unref();`;
+if (!source.includes(securityAnchor)) {
+  throw new Error('Expected Express initialization was not found; refusing to build.');
+}
+source = source.replace(securityAnchor, securityBlock);
+
+const loginAnchor = "app.post('/api/auth/login', async (req, res) => {";
+if (!source.includes(loginAnchor)) {
+  throw new Error('Expected login route was not found; refusing to build.');
+}
+source = source.replace(loginAnchor, "app.post('/api/auth/login', authRateLimit, async (req, res) => {");
+
+const registerAnchor = "app.post('/api/auth/register', async (req, res) => {";
+if (!source.includes(registerAnchor)) {
+  throw new Error('Expected registration route was not found; refusing to build.');
+}
+source = source.replace(registerAnchor, "app.post('/api/auth/register', authRateLimit, async (req, res) => {");
+
 fs.writeFileSync(target, source);
-console.log('Applied JazaMart M-Pesa sandbox hardening: Nairobi timestamp, configured account reference, unused import removal.');
+console.log('Applied JazaMart hardening: Nairobi M-Pesa timestamp, configured account reference, security headers, reduced fingerprinting, and authentication rate limiting.');

@@ -80,5 +80,27 @@ if (!source.includes(registerAnchor)) {
 }
 source = source.replace(registerAnchor, "app.post('/api/auth/register', authRateLimit, async (req, res) => {");
 
+const jwtAnchor = "dotenv.config();";
+if (!source.includes(jwtAnchor)) {
+  throw new Error('Expected dotenv initialization was not found; refusing to build.');
+}
+source = source.replace(jwtAnchor, `${jwtAnchor}
+if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'development-only-change-me')) {
+  throw new Error('JWT_SECRET must be configured in production.');
+}`);
+
+const tokenLog = "console.log('MPESA TOKEN RESPONSE:',r.status,JSON.stringify(d));";
+if (source.includes(tokenLog)) {
+  source = source.replace(tokenLog, "console.log('MPESA TOKEN RESPONSE STATUS:', r.status);");
+}
+const phoneLog = "console.log('STK PUSH REQUEST:',order_id,phone);";
+if (source.includes(phoneLog)) {
+  source = source.replace(phoneLog, "console.log('STK PUSH REQUEST:', order_id);");
+}
+const payloadLog = "console.log('STK PUSH PAYLOAD:',JSON.stringify(payload));";
+if (source.includes(payloadLog)) {
+  source = source.replace(payloadLog, "console.log('STK PUSH PAYLOAD PREPARED:', orderRow.id);");
+}
+
 fs.writeFileSync(target, source);
-console.log('Applied JazaMart hardening: Nairobi M-Pesa timestamp, configured account reference, security headers, reduced fingerprinting, and authentication rate limiting.');
+console.log('Applied JazaMart hardening: Nairobi M-Pesa timestamp, configured account reference, security headers, reduced fingerprinting, authentication rate limiting, production JWT secret enforcement, and M-Pesa log redaction.');
